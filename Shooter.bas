@@ -32,21 +32,37 @@ CLS
 '----------------------------
 
 DO
-LINE (1, 1)-(30 - conteoDisparo, 7), 4, BF
+IF colisiones < 0 THEN colisiones = 0
+IF colisiones > 10 THEN END
+LINE (1, 1)-(50 - conteoDisparo, 7), 4, BF
 LOCATE 2, 1: PRINT colisiones
+PRINT xMovimientoBala
+PRINT yMovimientoBala
 movimientoEnemigo = movimientoEnemigo + 1
-IF conteoDisparo <> 0 THEN conteoDisparo = conteoDisparo - 1
+
+IF conteoDisparo <> 0 THEN
+  conteoDisparo = conteoDisparo - 1
+  xBala = xBala + xMovimientoBala
+  yBala = yBala + yMovimientoBala
+  PSET (xBala, yBala), 14
+ELSE
+  xBala = xPersonaje + 5
+  yBala = yPersonaje + 5
+END IF
+
 IF chequeoDisparo = 1 THEN
   chequeoDisparo = 0
   disparoActivo = 1
 END IF
+
+
 
 GOSUB lecturaDeTeclas
 GOSUB movimientoEnemigoSub
 GOSUB movimientoPersonajeSub
 GOSUB choque
 IF disparoActivo = 1 THEN GOSUB disparo
-
+                       
 IF chequeoFantasma = 1 THEN conteoFantasma = conteoFantasma + 1
 IF conteoFantasma >= 50 THEN
   conteoFantasma = 0
@@ -65,40 +81,48 @@ LOOP
 
 lecturaDeTeclas:
 SELECT CASE INKEY$
+  CASE "1"
+    xMovimientoPersonaje = -1
+    yMovimientoPersonaje = 1
+    ultimaTecla$ = "1"
+  CASE "2"
+    xMovimientoPersonaje = 0
+    yMovimientoPersonaje = 1
+    ultimaTecla$ = "2"
+  CASE "3"
+    xMovimientoPersonaje = 1
+    yMovimientoPersonaje = 1
+    ultimaTecla$ = "3"
   CASE "4"
     xMovimientoPersonaje = -1
+    yMovimientoPersonaje = 0
+    ultimaTecla$ = "4"
+  CASE "5"
+    xMovimientoPersonaje = 0
     yMovimientoPersonaje = 0
   CASE "6"
     xMovimientoPersonaje = 1
     yMovimientoPersonaje = 0
-  CASE "8"
-    xMovimientoPersonaje = 0
-    yMovimientoPersonaje = -1
-  CASE "2"
-    xMovimientoPersonaje = 0
-    yMovimientoPersonaje = 1
+    ultimaTecla$ = "6"
   CASE "7"
     xMovimientoPersonaje = -1
     yMovimientoPersonaje = -1
-  CASE "1"
-    xMovimientoPersonaje = -1
-    yMovimientoPersonaje = 1
+    ultimaTecla$ = "7"
+  CASE "8"
+    xMovimientoPersonaje = 0
+    yMovimientoPersonaje = -1
+    ultimaTecla$ = "8"
   CASE "9"
     xMovimientoPersonaje = 1
     yMovimientoPersonaje = -1
-  CASE "3"
-    xMovimientoPersonaje = 1
-    yMovimientoPersonaje = 1
-  CASE "5"
-    xMovimientoPersonaje = 0
-    yMovimientoPersonaje = 0
+    ultimaTecla$ = "9"
   CASE "q"
     END
   CASE CHR$(32)              'disparo
     IF conteoDisparo = 0 THEN
       SOUND 1000, 1
       chequeoDisparo = 1
-      conteoDisparo = 30
+      conteoDisparo = 50
     END IF
 END SELECT
 RETURN
@@ -129,7 +153,7 @@ IF (movimientoEnemigo / 30) - CINT(movimientoEnemigo / 30) = 0 THEN 'cambia la d
   xMovimientoEnemigo = INT((3) * RND + -1)
   yMovimientoEnemigo = INT((3) * RND + -1)
   movimientoEnemigo = 0
-  SOUND 500, 1
+  'SOUND 500, 1
 END IF
 IF xEnemigo > 309 THEN       'evita que el enemigo salga de la pantalla
   xMovimientoEnemigo = -1
@@ -161,14 +185,45 @@ IF chequeoFantasma <> 1 THEN
     xMovimientoPersonaje = 0
     colisiones = colisiones + 1
     chequeoFantasma = 1
-    IF colisiones >= 10 THEN END
   END IF
 END IF
+IF xBala <= (xEnemigo + 9) AND xBala >= xEnemigo AND yBala <= (yEnemigo + 9) AND yBala >= yEnemigo THEN
+  xEnemigo = INT((309) * RND + 1)
+  yEnemigo = INT((189 - 10) * RND + 11)
+  colisiones = colisiones - 1
+  FElise$ = "o3 L8 E D+ E D+ E o2 B o3 D C L2 o2 A" 'esta musica la saque del help de PLAY, es solo un ejemplo, luego hay que modificarla
+  PLAY "MB X" + VARPTR$(FElise$)
+END IF
+
 RETURN
 
 disparo:
-LOCATE 1, 1
-PRINT "bang!"
+SELECT CASE ultimaTecla$
+  CASE "1"
+    xMovimientoBala = -2
+    yMovimientoBala = 2
+  CASE "2"
+    xMovimientoBala = 0
+    yMovimientoBala = 2
+  CASE "3"
+    xMovimientoBala = 2
+    yMovimientoBala = 2
+  CASE "4"
+    xMovimientoBala = -2
+    yMovimientoBala = 0
+  CASE "6"
+    xMovimientoBala = 2
+    yMovimientoBala = 0
+  CASE "7"
+    xMovimientoBala = -2
+    yMovimientoBala = -2
+  CASE "8"
+    xMovimientoBala = 0
+    yMovimientoBala = -2
+  CASE "9"
+    xMovimientoBala = 2
+    yMovimientoBala = -2
+END SELECT
 disparoActivo = 0
 RETURN
 
